@@ -27,7 +27,7 @@ class UniqueFastqPairs(object):
 
     def get_input(self):
         if self.is_gzip():
-            return io.BufferedReader(gzip.GzipFile(self.r1_infile), buffer_size=self.buffer_size), io.BufferedReader(gzip.GzipFile(self.r2_infile),  buffer_size=self.buffer_size)
+            return io.BufferedReader(gzip.GzipFile(self.r1_infile, 'rb'), buffer_size=self.buffer_size), io.BufferedReader(gzip.GzipFile(self.r2_infile, 'rb'),  buffer_size=self.buffer_size)
         return open(self.r1_infile), open(self.r2_infile)
 
     def get_output(self):
