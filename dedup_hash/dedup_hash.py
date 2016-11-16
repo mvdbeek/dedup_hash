@@ -8,7 +8,7 @@ from itertools import (
 
 
 class UniqueFastqPairs(object):
-    def __init__(self, r1_infile, r2_infile, r1_outfile, r2_outfile, write_gzip, buffer_size):
+    def __init__(self, r1_infile, r2_infile, r1_outfile, r2_outfile, write_gzip, buffer_size=32768, compresslevel=6):
         self.seen_hashes = set()
         self.r1_infile = r1_infile
         self.r2_infile = r2_infile
@@ -16,6 +16,7 @@ class UniqueFastqPairs(object):
         self.r2_outfile = r2_outfile
         self.write_gzip = write_gzip
         self.buffer_size = buffer_size
+        self.compresslevel = compresslevel
         self.cur_fastq_str_r1 = ""
         self.cur_fastq_str_r2 = ""
         self.cur_uniq = False
@@ -27,12 +28,12 @@ class UniqueFastqPairs(object):
 
     def get_input(self):
         if self.is_gzip():
-            return io.BufferedReader(gzip.GzipFile(self.r1_infile, 'rb'), buffer_size=self.buffer_size), io.BufferedReader(gzip.GzipFile(self.r2_infile, 'rb'),  buffer_size=self.buffer_size)
+            return io.BufferedReader(gzip.GzipFile(self.r1_infile, 'rb'), buffer_size=self.buffer_size), io.BufferedReader(gzip.GzipFile(self.r2_infile, 'rb'), buffer_size=self.buffer_size)
         return open(self.r1_infile), open(self.r2_infile)
 
     def get_output(self):
         if self.write_gzip:
-            return gzip.GzipFile(self.r1_outfile, 'wb'), gzip.GzipFile(self.r2_outfile, 'wb')
+            return gzip.GzipFile(self.r1_outfile, 'wb', compresslevel=self.compresslevel), gzip.GzipFile(self.r2_outfile, 'wb', compresslevel=self.compresslevel)
         return open(self.r1_outfile, 'w'), open(self.r2_outfile, 'w')
 
     def close_io(self):
@@ -85,6 +86,7 @@ def get_args():
     parser.add_argument('r2_out', help='Read2 output fastq file')
     parser.add_argument('--write_gzip', action='store_true', help="Compress output in gzip format?")
     parser.add_argument('--buffer_size', default=32768, type=int, help="Set buffer size for reading gzip files")
+    parser.add_argument('--compresslevel', default=6, type=int, choices=list(range(1, 10)), help="Set compression level (1: fastest, 9: highest compression)")
     return parser.parse_args()
 
 
@@ -95,7 +97,8 @@ def main():
                      r1_outfile=args.r1_out,
                      r2_outfile=args.r2_out,
                      write_gzip=args.write_gzip,
-                     buffer_size=args.buffer_size)
+                     buffer_size=args.buffer_size,
+                     compresslevel=args.compresslevel)
 
 
 if __name__ == '__main__':
