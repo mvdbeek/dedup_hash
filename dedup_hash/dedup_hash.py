@@ -8,13 +8,14 @@ from itertools import (
 
 
 class UniqueFastqPairs(object):
-    def __init__(self, r1_infile, r2_infile, r1_outfile, r2_outfile, write_gzip):
+    def __init__(self, r1_infile, r2_infile, r1_outfile, r2_outfile, write_gzip, buffer_size):
         self.seen_hashes = set()
         self.r1_infile = r1_infile
         self.r2_infile = r2_infile
         self.r1_outfile = r1_outfile
         self.r2_outfile = r2_outfile
         self.write_gzip = write_gzip
+        self.buffer_size = buffer_size
         self.cur_fastq_str_r1 = ""
         self.cur_fastq_str_r2 = ""
         self.cur_uniq = False
@@ -26,12 +27,12 @@ class UniqueFastqPairs(object):
 
     def get_input(self):
         if self.is_gzip():
-            return io.BufferedReader(gzip.GzipFile(self.r1_infile)), io.BufferedReader(gzip.GzipFile(self.r2_infile))
+            return io.BufferedReader(gzip.GzipFile(self.r1_infile), buffer_size=self.buffer_size), io.BufferedReader(gzip.GzipFile(self.r2_infile),  buffer_size=self.buffer_size)
         return open(self.r1_infile), open(self.r2_infile)
 
     def get_output(self):
         if self.write_gzip:
-            return io.BufferedWriter(gzip.GzipFile(self.r1_outfile, 'w')), io.BufferedWriter(gzip.GzipFile(self.r2_outfile, 'w'))
+            return io.BufferedWriter(gzip.GzipFile(self.r1_outfile, 'w'), buffer_size=self.buffer_size), io.BufferedWriter(gzip.GzipFile(self.r2_outfile, 'w'),  buffer_size=self.buffer_size)
         return open(self.r1_outfile, 'w'), open(self.r2_outfile, 'w')
 
     def close_io(self):
@@ -83,6 +84,7 @@ def get_args():
     parser.add_argument('r1_out', help='Read1 output fastq file')
     parser.add_argument('r2_out', help='Read2 output fastq file')
     parser.add_argument('--write_gzip', action='store_true', help="Compress output in gzip format?")
+    parser.add_argument('--buffer_size', default=8192, type=int, help="Set buffer size for reading/writing gzip files")
     return parser.parse_args()
 
 
@@ -92,7 +94,8 @@ def main():
                      r2_infile=args.r2_in,
                      r1_outfile=args.r1_out,
                      r2_outfile=args.r2_out,
-                     write_gzip=args.write_gzip)
+                     write_gzip=args.write_gzip,
+                     buffer_size=args.buffer_size)
 
 
 if __name__ == '__main__':
