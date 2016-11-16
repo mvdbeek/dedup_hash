@@ -1,0 +1,11 @@
+sudo: false
+language: python
+python:
+  - "2.7"
+
+install:
+  - make setup-venv
+
+script:
+  - make lint
+  - make test
