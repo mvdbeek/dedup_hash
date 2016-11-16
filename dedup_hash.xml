@@ -1,0 +1,59 @@
+<tool id="dedup_hash" name="Deduplicate paired fastq" version="0.1.0">
+    <description>with fast and memory-efficient sequence hashes</description>
+    <requirements>
+        <requirement type="package" version="0.1.0">dedup_hash</requirement>
+    </requirements>
+    <command><![CDATA[
+    dedup_hash
+    '$fastq_R1'
+    '$fastq_R2'
+    '$fastq_R1_rmdup'
+    '$fastq_R2_rmdup'
+    $compress_fastq
+    ]]></command>
+    <inputs>
+        <param format="fastq,fastq.gz" name="fastq_R1" type="data" label="R1 reads"/>
+        <param format="fastq,fastq.gz" name="fastq_R2" type="data" label="R2 reads"/>
+        <param name="compress_fastq" type="boolean" checked="true" truevalue="--write_gzip" falsevalue="" label="Unchek to produce uncompressed fastq"/>
+    </inputs>
+    <outputs>
+        <data format="fastq.gz" name="fastq_R1_rmdup" type="data" label="${fastq_R1.element_identifier} Unique Reads">
+            <change_format>
+                <when input="compress_fastq" value="" format="fastq"/>
+            </change_format>
+        </data>
+        <data format="fastq.gz" name="fastq_R2_rmdup" type="data" label="${fastq_R2.element_identifier} Unique Reads">
+            <change_format>
+                <when input="compress_fastq" value="" format="fastq"/>
+            </change_format>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="fastq_R1" value="input_R1.fastq" ftype="fastq"/>
+            <param name="fastq_R2" value="input_R2.fastq" ftype="fastq"/>
+            <param name="compress_fastq" value=""/>
+            <param name="fastq_R1_rmdup" value="output_R1.fastq" ftype="fastq"/>
+            <param name="fastq_R2_rmdup" value="output_R2.fastq" ftype="fastq"/>
+        </test>
+    </tests>
+    <help> <![CDATA[
+**Deduplicate paired fastq** is a fast and memory-efficient tool for removal of duplicates in paired short DNA sequence reads in fastq format.
+It identifies duplicates by concatenating the sequence of a readpair and calculating a short hash that uniquely identifies the concatenated sequence.
+Sequences that are not unique (i.e a hash of the concatenated sequence has been seen previously) are being discarded.
+
+Compared to fastuniq this tool requires only a fraction of the memory, but does not identify pairs that are identical,
+except for a switch of R1 and R2. Such reads may nevertheless align to different places based on the seed-searching of the aligner,
+so this may or may not be a problem for your application.
+
+Fastuniq consumed 76 GB of memory and took 4:01.52 on a typical dataset of 100nt 25 x 10^6 paired end reads,
+while this tool took 4.7GB of memory and 3:23.27 for the same dataset.
+
+Both tools produced the exact same result, arguing that, at least before quality and/or adapter trimming,
+the previously mentioned limitations are of theoretical concern.
+
+     ]]> </help>
+    <citations>
+        <citation type="doi">doi:10.1371/journal.pone.0052249</citation>
+    </citations>
+</tool>
