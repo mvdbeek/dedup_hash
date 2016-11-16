@@ -1,0 +1,60 @@
+<tool id ="fastuniq" name="FastUniq" version="1.1">
+    <description></description>
+    <requirements>
+        <requirement type="package" version="1.1">fastuniq</requirement>
+    </requirements>
+    <stdio>
+        <exit_code range="1:" />
+    </stdio>
+    <command><![CDATA[
+    python $__tool_directory__/create_input_list.py
+    --fastq_R1 "$fastq_R1"
+    --fastq_R2 "$fastq_R2"
+    --output_list output_list &&
+    fastuniq
+    -i output_list
+    -t "$select_output_format"
+    -o "$fastq_R1_rmdup"
+    -p "$fastq_R2_rmdup"
+    -c 0
+    ]]></command>
+    <inputs>
+        <param format="fastq" name="fastq_R1" type="data" label="R1 reads"/>
+        <param format="fastq" name="fastq_R2" type="data" label="R2 reads"/>
+        <param name="select_output_format" type="select" label="Select Output Format">
+            <option value="q" selected="true">FASTQ</option>
+            <option value="f">FASTA</option>
+        </param>
+    </inputs>
+    <outputs>
+        <data format="fastq" name="fastq_R1_rmdup" type="data" label="${fastq_R1.element_identifier} Unique Reads">
+            <change_format>
+                <when input="select_output_format" value="f" format="fasta"/>
+            </change_format>
+        </data>
+        <data format="fastq" name="fastq_R2_rmdup" type="data" label="${fastq_R2.element_identifier} Unique Reads">
+            <change_format>
+                <when input="select_output_format" value="f" format="fasta"/>
+            </change_format>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="fastq_R1" value="input_R1.fastq" ftype="fastq"/>
+            <param name="fastq_R2" value="input_R2.fastq" ftype="fastq"/>
+            <param name="select_output_format" value="q"/>
+            <param name="fastq_R1_rmdup" value="output_R1.fastq" ftype="fastq"/>
+            <param name="fastq_R2_rmdup" value="output_R2.fastq" ftype="fastq"/>
+        </test>
+    </tests>
+    <help> <![CDATA[
+**FastUniq** is an ultrafast de novo tool for removal of duplicates in paired short DNA sequence reads in FASTQ format.
+It identifies duplicates by comparing sequences between read pairs and does not require complete genome sequences as prerequisites.
+It is also capable of simultaneously handling reads with different lengths and results in highly efficient running time.
+
+The input files required are two paired forward and reverse read files in fastq format.
+     ]]> </help>
+    <citations>
+        <citation type="doi">doi:10.1371/journal.pone.0052249</citation>
+    </citations>
+</tool>
