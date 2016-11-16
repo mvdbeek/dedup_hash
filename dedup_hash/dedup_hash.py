@@ -33,7 +33,7 @@ class UniqueFastqPairs(object):
 
     def get_output(self):
         if self.write_gzip:
-            return io.BufferedWriter(gzip.GzipFile(self.r1_outfile, 'wb', compresslevel=self.compresslevel)), io.BufferedWriter(gzip.GzipFile(self.r2_outfile, 'wb', compresslevel=self.compresslevel))
+            return io.BufferedWriter(gzip.GzipFile(self.r1_outfile, 'wb', compresslevel=self.compresslevel), buffer_size=self.buffer_size), io.BufferedWriter(gzip.GzipFile(self.r2_outfile, 'wb', compresslevel=self.compresslevel), buffer_size=self.buffer_size)
         return open(self.r1_outfile, 'w'), open(self.r2_outfile, 'w')
 
     def close_io(self):
@@ -86,7 +86,7 @@ def get_args():
     parser.add_argument('r2_out', help='Read2 output fastq file')
     parser.add_argument('--write_gzip', action='store_true', help="Compress output in gzip format?")
     parser.add_argument('--buffer_size', default=32768, type=int, help="Set buffer size for reading gzip files")
-    parser.add_argument('--compresslevel', default=6, type=int, choices=list(range(1, 10)), help="Set compression level (1: fastest, 9: highest compression)")
+    parser.add_argument('--compresslevel', default=2, type=int, choices=list(range(1, 10)), help="Set compression level (1: fastest, 9: highest compression)")
     return parser.parse_args()
 
 
