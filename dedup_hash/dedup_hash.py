@@ -1,5 +1,6 @@
 import argparse
 import gzip
+import io
 from cityhash import CityHash64
 from itertools import (
     cycle, izip
@@ -25,12 +26,12 @@ class UniqueFastqPairs(object):
 
     def get_input(self):
         if self.is_gzip():
-            return gzip.GzipFile(self.r1_infile), gzip.GzipFile(self.r2_infile)
+            return io.BufferedReader(gzip.GzipFile(self.r1_infile)), io.BufferedReader(gzip.GzipFile(self.r2_infile))
         return open(self.r1_infile), open(self.r2_infile)
 
     def get_output(self):
         if self.write_gzip:
-            return gzip.GzipFile(self.r1_outfile, 'w'), gzip.GzipFile(self.r2_outfile, 'w')
+            return io.BufferedWriter(gzip.GzipFile(self.r1_outfile, 'w')), io.BufferedWriter(gzip.GzipFile(self.r2_outfile, 'w'))
         return open(self.r1_outfile, 'w'), open(self.r2_outfile, 'w')
 
     def close_io(self):
