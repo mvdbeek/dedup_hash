@@ -18,14 +18,10 @@ class UniqueFastqPairs(object):
         self.cur_fastq_str_r2 = ""
         self.cur_uniq = False
         self.fastq_cycle = cycle([self.header_one_action, self.seq_action, self.header_two_action, self.qual_action])
-        try:
-            self.r1, self.r2 = self.get_input()
-            self.r1_out, self.r2_out = self.get_output()
-            self.process_files()
-        except Exception:
-            raise
-        finally:
-            self.close_io()
+        self.r1, self.r2 = self.get_input()
+        self.r1_out, self.r2_out = self.get_output()
+        self.process_files()
+        self.close_io()
 
     def get_input(self):
         if self.is_gzip():
@@ -44,9 +40,9 @@ class UniqueFastqPairs(object):
         self.r2_out.close()
 
     def is_gzip(self):
-        gzip_magic_byte = u"\x1f\x8b\x08"
+        gzip_magic_byte = b"\x1f\x8b\x08"
         with open(self.r1_infile) as input:
-            return gzip_magic_byte == input.read(len(gzip_magic_byte)).decode('utf-8')
+            return gzip_magic_byte == input.read(len(gzip_magic_byte))
 
     def process_files(self):
         for fastq_item, r1_line, r2_line in izip(self.fastq_cycle, self.r1, self.r2):
