@@ -32,7 +32,7 @@ class UniqueFastqPairs(object):
 
     def get_output(self):
         if self.write_gzip:
-            return gzip.GzipFile(self.r1_outfile, 'w'), gzip.GzipFile(self.r2_outfile, 'w')
+            return gzip.GzipFile(self.r1_outfile, 'wb'), gzip.GzipFile(self.r2_outfile, 'wb')
         return open(self.r1_outfile, 'w'), open(self.r2_outfile, 'w')
 
     def close_io(self):
