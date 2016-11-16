@@ -1,0 +1,6 @@
+.tox/
+.idea/
+*.swp
+dist/
+*.egg-info/
+tool_test_output.*
