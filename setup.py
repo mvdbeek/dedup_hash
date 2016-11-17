@@ -3,7 +3,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-requirements = ['cityhash']
+requirements = ['smhasher']
 
 ENTRY_POINTS = '''
         [console_scripts]
@@ -15,7 +15,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='dedup_hash',
-    version='0.1.0',
+    version='0.1.1',
     packages=['dedup_hash'],
     install_requires=requirements,
     long_description=readme + '\n\n' + history,

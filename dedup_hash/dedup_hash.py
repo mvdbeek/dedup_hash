@@ -1,14 +1,23 @@
 import argparse
 import gzip
 import io
-from cityhash import CityHash64
-from itertools import (
-    cycle, izip
-)
+from itertools import cycle
+import sys
+try:
+    from itertools import izip
+except ImportError:
+    pass  # we can simply use zip in python3
 
 
-class UniqueFastqPairs(object):
-    def __init__(self, r1_infile, r2_infile, r1_outfile, r2_outfile, write_gzip, buffer_size=32768, compresslevel=6):
+class UniqueFastqPairsBase(object):
+    def __init__(self,
+                 r1_infile,
+                 r2_infile,
+                 r1_outfile,
+                 r2_outfile, write_gzip,
+                 buffer_size=32768,
+                 compresslevel=2,
+                 hash_module="smhasher"):
         self.seen_hashes = set()
         self.r1_infile = r1_infile
         self.r2_infile = r2_infile
@@ -17,6 +26,7 @@ class UniqueFastqPairs(object):
         self.write_gzip = write_gzip
         self.buffer_size = buffer_size
         self.compresslevel = compresslevel
+        self.hash_module = self.import_hash_module(hash_module)
         self.cur_fastq_str_r1 = ""
         self.cur_fastq_str_r2 = ""
         self.cur_uniq = False
@@ -25,6 +35,17 @@ class UniqueFastqPairs(object):
         self.r1_out, self.r2_out = self.get_output()
         self.process_files()
         self.close_io()
+
+    def import_hash_module(self, hash_module):
+        if hash_module == "smhasher":
+            from smhasher import murmur3_x64_64
+            return murmur3_x64_64
+        if hash_module == "CityHash64":
+            from cityhash import CityHash64
+            return CityHash64
+        if hash_module == "hashxx":
+            from pyhashxx import hashxx
+            return hashxx
 
     def get_input(self):
         if self.is_gzip():
@@ -44,15 +65,14 @@ class UniqueFastqPairs(object):
 
     def is_gzip(self):
         gzip_magic_byte = b"\x1f\x8b\x08"
-        with open(self.r1_infile) as input:
+        with open(self.r1_infile, 'rb') as input:
             return gzip_magic_byte == input.read(len(gzip_magic_byte))
 
     def process_files(self):
-        for fastq_item, r1_line, r2_line in izip(self.fastq_cycle, self.r1, self.r2):
-            fastq_item(r1_line, r2_line)
+        raise Exception('Not implemented')
 
     def seq_action(self, r1_line, r2_line):
-        cur_hash = CityHash64(r1_line + r2_line)
+        cur_hash = self.hash_module("".join((r1_line, r2_line)))
         if cur_hash in self.seen_hashes:
             self.cur_uniq = False
         else:
@@ -78,6 +98,20 @@ class UniqueFastqPairs(object):
             self.r2_out.write(self.cur_fastq_str_r2)
 
 
+class UniqueFastqPairsPy2(UniqueFastqPairsBase):
+
+    def process_files(self):
+        for fastq_item, r1_line, r2_line in izip(self.fastq_cycle, self.r1, self.r2):
+            fastq_item(r1_line, r2_line)
+
+
+class UniqueFastqPairsPy3(UniqueFastqPairsBase):
+
+    def process_files(self):
+        for fastq_item, r1_line, r2_line in zip(self.fastq_cycle, self.r1, self.r2):
+            fastq_item(r1_line.decode(), r2_line.decode())
+
+
 def get_args():
     parser = argparse.ArgumentParser(description='Get unique reads from fastq files')
     parser.add_argument('r1_in', help='Read1 input fastq file')
@@ -87,11 +121,20 @@ def get_args():
     parser.add_argument('--write_gzip', action='store_true', help="Compress output in gzip format?")
     parser.add_argument('--buffer_size', default=32768, type=int, help="Set buffer size for reading gzip files")
     parser.add_argument('--compresslevel', default=2, type=int, choices=list(range(1, 10)), help="Set compression level (1: fastest, 9: highest compression)")
+    parser.add_argument('--algo', default='smhasher', choices=['CityHash64', 'hashxx', 'smhasher'], help='Select hash algorithm')
     return parser.parse_args()
+
+
+def get_fastq_pairs():
+    if sys.version_info.major == 2:
+        return UniqueFastqPairsPy2
+    elif sys.version_info.major == 3:
+        return UniqueFastqPairsPy3
 
 
 def main():
     args = get_args()
+    UniqueFastqPairs = get_fastq_pairs()
     UniqueFastqPairs(r1_infile=args.r1_in,
                      r2_infile=args.r2_in,
                      r1_outfile=args.r1_out,
