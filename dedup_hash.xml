@@ -1,7 +1,7 @@
-<tool id="dedup_hash" name="Deduplicate paired fastq" version="0.1.0">
+<tool id="dedup_hash" name="Deduplicate paired fastq" version="0.1.1">
     <description>with fast and memory-efficient sequence hashes</description>
     <requirements>
-        <requirement type="package" version="0.1.5">cityhash</requirement>
+        <requirement type="package" version="0.150.1">smhasher</requirement>
     </requirements>
     <command><![CDATA[
     python '$__tool_directory__/dedup_hash/dedup_hash.py'
@@ -30,8 +30,15 @@
     </outputs>
     <tests>
         <test>
-            <param name="fastq_R1" value="r1.fastq.gz" ftype="fastq"/>
-            <param name="fastq_R2" value="r2.fastq.gz" ftype="fastq"/>
+            <param name="fastq_R1" value="r1.fastq.gz" ftype="fastq.gz"/>
+            <param name="fastq_R2" value="r2.fastq.gz" ftype="fastq.gz"/>
+            <param name="compress_fastq" value="--write_gzip"/>
+            <output name="fastq_R1_rmdup" file="r1_dedup.fastq.gz" ftype="fastq.gz"/>
+            <output name="fastq_R2_rmdup" file="r2_dedup.fastq.gz" ftype="fastq.gz"/>
+        </test>
+        <test>
+            <param name="fastq_R1" value="r1.fastq" ftype="fastq"/>
+            <param name="fastq_R2" value="r2.fastq" ftype="fastq"/>
             <param name="compress_fastq" value=""/>
             <output name="fastq_R1_rmdup" file="r1_dedup.fastq" ftype="fastq"/>
             <output name="fastq_R2_rmdup" file="r2_dedup.fastq" ftype="fastq"/>

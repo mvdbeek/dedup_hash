@@ -14,7 +14,7 @@ lint: setup-venv # Run a test.
 test: setup-venv
 	pip install planemo && planemo conda_init --conda_prefix $(CONDA_PREFIX) && \
 		planemo conda_install --conda_prefix $(CONDA_PREFIX) . && \
-		planemo test --conda_dependency_resolution --conda_prefix $(CONDA_PREFIX)
+		planemo test --galaxy_branch fastqgz --galaxy_source https://github.com/mvdbeek/galaxy --conda_dependency_resolution --conda_prefix $(CONDA_PREFIX)
 
 clean:
 	rm -Rf .venv .conda dist/ *.egg-info tool_test_output.* .tox  || true
