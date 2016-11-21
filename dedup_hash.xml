@@ -1,17 +1,43 @@
-<tool id="dedup_hash" name="Deduplicate paired fastq" version="0.1.1">
+<tool id="dedup_hash" name="Deduplicate paired fastq" version="0.1.2">
     <description>with fast and memory-efficient sequence hashes</description>
     <requirements>
         <requirement type="package" version="0.150.1">smhasher</requirement>
     </requirements>
     <command><![CDATA[
     python '$__tool_directory__/dedup_hash/dedup_hash.py'
-    '$fastq_R1'
-    '$fastq_R2'
-    '$fastq_R1_rmdup'
-    '$fastq_R2_rmdup'
+    --r1_in '$fastq_R1'
+    --r2_in '$fastq_R2'
+    --r1_out '$fastq_R1_rmdup'
+    --r2_out '$fastq_R2_rmdup'
     $compress_fastq
     ]]></command>
     <inputs>
+        <!--
+        <conditional name="readtype">
+            <param name="single_or_paired" type="select" label="Single-end or paired-end reads?" help="Note: Sickle will infer the quality type of the file from its datatype.  I.e., if the datatype is fastqsanger, then the quality type is sanger. The default is fastqsanger.">
+                <option value="se" selected="true">Single-end</option>
+                <option value="pe_combo">Paired-end (one interleaved input file)</option>
+                <option value="pe_sep">Paired-end (two separate input files)</option>
+                <option value="pe_collection">Paired-end (as collection)</option>
+            </param>
+            <when value="se">
+                <param format="fastq" name="input_single" type="data" label="Single-end FASTQ reads" help="(-f)" />
+            </when>
+            <when value="pe_combo">
+                <param format="fastq" name="input_combo" type="data" label="Paired-end interleaved FASTQ reads" help="(-c)" />
+                <param name="output_n" type="boolean" label="Output only one file with all reads" help="This will output only one file with all the reads, where the reads that did not pass filter will be replaced with a single 'N', rather than discarded."/>
+            </when>
+
+            <when value="pe_sep">
+                <param format="fastq" name="input_paired1" type="data" label="Paired-end forward strand FASTQ reads" help="(-f)" />
+                <param format="fastq" name="input_paired2" type="data" label="Paired-end reverse strand FASTQ reads" help="(-r)" />
+            </when>
+
+            <when value="pe_collection">
+                <param format="fastq, fastq.gz" name="input_paired" type="data_collection" collection_type="paired" label="Paired-end FASTQ reads as paired collection" />
+            </when>
+        </conditional>
+        -->
         <param format="fastq,fastq.gz" name="fastq_R1" type="data" label="R1 reads"/>
         <param format="fastq,fastq.gz" name="fastq_R2" type="data" label="R2 reads"/>
         <param name="compress_fastq" type="boolean" checked="true" truevalue="--write_gzip" falsevalue="" label="Unchek to produce uncompressed fastq"/>
