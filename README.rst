@@ -1,5 +1,9 @@
+.. image:: https://travis-ci.org/mvdbeek/dedup_hash.svg?branch=master
+    :target: https://travis-ci.org/mvdbeek/dedup_hash
+
 dedup_hash
 ----------------------------
+
 
 This is a commandline utility to remove exact duplicate reads
 from paired-end fastq files. Reads are assumed to be in 2 separate
@@ -18,5 +22,5 @@ Installation
 depdup_city relies on the cityhash python package,
 which supports python-2.7 exclusively.
 
-``pip install dedup_hash`
+``pip install dedup_hash``
 
