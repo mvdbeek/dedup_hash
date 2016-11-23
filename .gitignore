@@ -4,3 +4,7 @@
 dist/
 *.egg-info/
 tool_test_output.*
+.venv/
+.conda/
+.galaxy/
+*.sqlite*
