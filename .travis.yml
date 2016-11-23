@@ -6,7 +6,9 @@ python:
 
 install:
   - make setup-venv
+  - make setup_galaxy_clone
 
 script:
   - make lint
-  - make test
+  - make py-test
+  - make planemo-test

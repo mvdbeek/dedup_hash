@@ -6,3 +6,4 @@ dist/
 tool_test_output.*
 .venv/
 .conda/
+.galaxy/
