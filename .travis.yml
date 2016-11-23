@@ -1,14 +1,18 @@
 sudo: false
 language: python
-python:
-  - "2.7"
-  - "3.5"
+matrix:
+  include:
+    - python: "2.7"
+      env: SUITE="2.7"
+    - python: "3.5"
+      env: SUITE="3.5"
 
 install:
   - make setup-venv
-  - make setup_galaxy_clone
+  - if [ "$SUITE" == "2.7" ]; then make setup_galaxy_clone; fi
 
 script:
-  - make lint
+  - if [ "$SUITE" == "2.7" ]; then make lint-27; fi
+  - if [ "$SUITE" == "3.5" ]; then make lint-35; fi
   - make py-test
-  - make planemo-test
+  - if [ "$SUITE" == "2.7" ]; then make planemo-test; fi

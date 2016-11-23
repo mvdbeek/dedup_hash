@@ -13,8 +13,11 @@ setup-venv: ## setup a development virutalenv in current directory
 	$(IN_VENV) pip install -r requirements.txt;
 	$(IN_VENV) pip install planemo
 
-lint: setup-venv
-	pip install tox watchdog && tox
+lint-35: setup-venv
+	$(IN_VENV) pip install tox && $(IN_VENV) tox -e py35-lint
+
+lint-27: setup-venv
+	$(IN_VENV) pip install tox && $(IN_VENV) tox -e py27-lint
 
 db:
 	if [ ! -d db_gx_rev_0127.sqlite ]; then wget https://github.com/jmchilton/galaxy-downloads/raw/master/db_gx_rev_0127.sqlite ; exit; fi;
@@ -25,7 +28,7 @@ setup_galaxy_clone:
 planemo-test: db setup-venv setup_galaxy_clone
 	if [ ! -d $(CONDA_PREFIX) ]; then $(PLANEMO) conda_init --conda_prefix $(CONDA_PREFIX);fi && \
 		$(PLANEMO) conda_install --conda_prefix $(CONDA_PREFIX_PATH) . && \
-		$(PLANEMO) planemo test \
+		$(PLANEMO) test \
 		--galaxy_database_seed db_gx_rev_0127.sqlite \
         --galaxy_root .galaxy \
 		--galaxy_source $(GALAXY_REPO) \
