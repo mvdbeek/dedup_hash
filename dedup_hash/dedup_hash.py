@@ -1,8 +1,8 @@
 import argparse
 import gzip
 import io
-from itertools import cycle
 import sys
+from itertools import cycle
 try:
     from itertools import izip
 except ImportError:
@@ -24,7 +24,6 @@ class UniqueFastqBase(object):
         self.buffer_size = buffer_size
         self.compresslevel = compresslevel
         self.hash_module = self.import_hash_module(hash_module)
-        self.is_gzip = self._is_gzip()
         self.cur_fastq_str_r1 = ""
         self.cur_fastq_str_r2 = ""
         self.cur_uniq = False
@@ -45,10 +44,14 @@ class UniqueFastqBase(object):
             from pyhashxx import hashxx
             return hashxx
 
+    def get_input(self, infile):
+        if self._is_gzip(infile):
+            return io.BufferedReader(gzip.GzipFile(infile, 'rb'), buffer_size=self.buffer_size)
+        else:
+            return open(infile)
+
     def get_inputs(self):
-        if self.is_gzip:
-            return [io.BufferedReader(gzip.GzipFile(infile, 'rb'), buffer_size=self.buffer_size) for infile in self.infiles]
-        return [open(infile) for infile in self.infiles]
+        return [self.get_input(infile) for infile in self.infiles]
 
     def get_outputs(self):
         if self.write_gzip:
@@ -59,9 +62,9 @@ class UniqueFastqBase(object):
         [infile.close() for infile in self.infiles]
         [outfile.close() for outfile in self.outfiles]
 
-    def _is_gzip(self):
+    def _is_gzip(self, infile):
         gzip_magic_byte = b"\x1f\x8b\x08"
-        with open(self.infiles[0], 'rb') as input:
+        with open(infile, 'rb') as input:
             return gzip_magic_byte == input.read(len(gzip_magic_byte))
 
     def process_files(self):
@@ -101,16 +104,12 @@ class UniqueFastqPairsPy2(UniqueFastqBase):
 class UniqueFastqPairsPy3(UniqueFastqBase):
 
     def process_files(self):
-        if self.is_gzip:
-            for items in zip(self.fastq_cycle, *self.infiles):
-                fastq_item = items[0]
-                lines = items[1:]
-                fastq_item([l.decode() for l in lines])
-        else:
-            for items in zip(self.fastq_cycle, *self.infiles):
-                fastq_item = items[0]
-                lines = items[1:]
-                fastq_item(lines)
+        for items in zip(self.fastq_cycle, *self.infiles):
+            fastq_item = items[0]
+            lines = items[1:]
+            # The following might be slow, rework this to something smarter
+            # it it slows down too much.
+            fastq_item([l if isinstance(l, str) else l.decode() for l in lines])
 
 
 def get_args():
