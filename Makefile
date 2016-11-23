@@ -6,10 +6,12 @@ CONDA_PREFIX?=.conda
 CONDA_PREFIX_PATH?=`readlink -e .conda`
 # Source virtualenv to execute command (flake8, sphinx, twine, etc...)
 IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
+PLANEMO=$(IN_VENV) planemo
 
 setup-venv: ## setup a development virutalenv in current directory
 	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
-	$(IN_VENV) pip install -r requirements.txt
+	$(IN_VENV) pip install -r requirements.txt;
+	$(IN_VENV) pip install planemo
 
 lint: setup-venv
 	pip install tox watchdog && tox
@@ -20,10 +22,10 @@ db:
 setup_galaxy_clone:
 	if [ ! -d .galaxy ]; then git clone --depth=50 --branch $(BRANCH) $(GALAXY_REPO) .galaxy; exit; fi;
 
-planemo-test: setup-venv setup_galaxy_clone
-	pip install planemo && if [ ! -d $(CONDA_PREFIX) ]; then planemo conda_init --conda_prefix $(CONDA_PREFIX);fi && \
-		planemo conda_install --conda_prefix $(CONDA_PREFIX_PATH) . && \
-		planemo test \
+planemo-test: db setup-venv setup_galaxy_clone
+	if [ ! -d $(CONDA_PREFIX) ]; then $(PLANEMO) conda_init --conda_prefix $(CONDA_PREFIX);fi && \
+		$(PLANEMO) conda_install --conda_prefix $(CONDA_PREFIX_PATH) . && \
+		$(PLANEMO) planemo test \
 		--galaxy_database_seed db_gx_rev_0127.sqlite \
         --galaxy_root .galaxy \
 		--galaxy_source $(GALAXY_REPO) \
@@ -31,8 +33,8 @@ planemo-test: setup-venv setup_galaxy_clone
 		--conda_dependency_resolution \
 		--conda_prefix $(CONDA_PREFIX_PATH)
 
-planemo-serve: setup-venv setup_galaxy_clone
-	planemo serve \
+planemo-serve: db setup-venv setup_galaxy_clone
+	$(PLANEMO) serve \
         --galaxy_database_seed db_gx_rev_0127.sqlite \
         --galaxy_root .galaxy \
 		--galaxy_source $(GALAXY_REPO) \
